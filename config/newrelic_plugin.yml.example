@@ -33,7 +33,9 @@ agents:
       instance_name: "App name"
       uri: "redis://localhost:6379"
       namespace: "namespace"
+      service_name: "service-name"
     -
       instance_name: "App name"
       uri: "redis://localhost:6379"
       namespace: "namespace"
+      service_name: "service-name"
