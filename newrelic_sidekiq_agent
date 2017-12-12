@@ -12,9 +12,9 @@ module SidekiqStatusAgent
 
   class Agent < NewRelic::Plugin::Agent::Base
 
-    agent_guid "io.loot.newrelic-sidekiq-agent"
-    agent_config_options :instance_name, :uri, :namespace, :service_name
-    agent_version '0.0.4'
+    agent_guid "org.flinc.newrelic-sidekiq-agent"
+    agent_config_options :instance_name, :uri, :namespace
+    agent_version '0.0.3'
     agent_human_labels('Sidekiq Qs') { instance_name }
 
     def setup_metrics
@@ -23,7 +23,6 @@ module SidekiqStatusAgent
     end
 
     def poll_cycle
-
       if uri.nil?
         raise "Redis connection URL missing"
       end
@@ -34,21 +33,20 @@ module SidekiqStatusAgent
       end
 
       begin
-
         stats = Sidekiq::Stats.new
         workers = Sidekiq::Workers.new
 
-        report_metric "Custom/#{service_name}/Workers/Working", "Workers",           workers.size
-        report_metric "Custom/#{service_name}/Jobs/Pending", "Jobs",                 stats.enqueued
-        report_metric "Custom/#{service_name}/Jobs/Processed", "Jobs",               stats.processed
-        report_metric "Custom/#{service_name}/Jobs/Retries", "Jobs",                 stats.retry_size
-        report_metric "Custom/#{service_name}/Jobs/Scheduled", "Jobs",               stats.scheduled_size
-        report_metric "Custom/#{service_name}/Jobs/Rate/Processed", "Jobs/Second",   @processed.process(stats.processed)
-        report_metric "Custom/#{service_name}/Jobs/Rate/Failed", "Jobs/Second",      @total_failed.process(stats.failed)
-        report_metric "Custom/#{service_name}/Jobs/Failed", "Jobs",                  stats.failed || 0
+        report_metric "Workers/Working", "Workers",           workers.size
+        report_metric "Jobs/Pending", "Jobs",                 stats.enqueued
+        report_metric "Jobs/Processed", "Jobs",               stats.processed
+        report_metric "Jobs/Retries", "Jobs",                 stats.retry_size
+        report_metric "Jobs/Scheduled", "Jobs",               stats.scheduled_size
+        report_metric "Jobs/Rate/Processed", "Jobs/Second",   @processed.process(stats.processed)
+        report_metric "Jobs/Rate/Failed", "Jobs/Second",      @total_failed.process(stats.failed)
+        report_metric "Jobs/Failed", "Jobs",                  stats.failed || 0
 
         stats.queues.each do |name, enqueued|
-          report_metric "Custom/#{service_name}/Queues/#{name}", "Enqueued", enqueued
+          report_metric "Queues/#{name}", "Enqueued", enqueued
         end
 
       rescue Redis::TimeoutError
